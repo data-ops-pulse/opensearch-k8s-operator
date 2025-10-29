@@ -37,6 +37,7 @@ type K8sClient interface {
 	GetOpenSearchCluster(name, namespace string) (opsterv1.OpenSearchCluster, error)
 	UpdateOpenSearchClusterStatus(key client.ObjectKey, f func(*opsterv1.OpenSearchCluster)) error
 	UdateObjectStatus(instance client.Object, f func(client.Object)) error
+	UpdateObject(obj client.Object) error
 	ReconcileResource(runtime.Object, reconciler.DesiredState) (*ctrl.Result, error)
 	GetPod(name, namespace string) (corev1.Pod, error)
 	DeletePod(pod *corev1.Pod) error
@@ -191,6 +192,13 @@ func (c K8sClientImpl) UdateObjectStatus(instance client.Object, f func(client.O
 		}
 		f(instance)
 		return c.Status().Update(c.ctx, instance)
+	})
+}
+
+// UpdateObject updates a generic kubernetes object
+func (c K8sClientImpl) UpdateObject(obj client.Object) error {
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		return c.Update(c.ctx, obj)
 	})
 }
 
