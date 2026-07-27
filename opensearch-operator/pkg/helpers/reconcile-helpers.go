@@ -116,7 +116,7 @@ func HasPinnedCustomImage(cr *opensearchv1.OpenSearchCluster) bool {
 	if cr == nil || cr.Spec.General.ImageSpec == nil {
 		return false
 	}
-	return cr.Spec.General.ImageSpec.Image != nil && *cr.Spec.General.ImageSpec.Image != ""
+	return cr.Spec.General.Image != nil && *cr.Spec.General.Image != ""
 }
 
 // PinnedCustomImage returns the pinned custom image string, or empty if none is set.
@@ -124,7 +124,7 @@ func PinnedCustomImage(cr *opensearchv1.OpenSearchCluster) string {
 	if !HasPinnedCustomImage(cr) {
 		return ""
 	}
-	return *cr.Spec.General.ImageSpec.Image
+	return *cr.Spec.General.Image
 }
 
 // Function to help identify httpPort, securityConfigPort and securityConfigPath for 1.x and 2.x OpenSearch Operator.
