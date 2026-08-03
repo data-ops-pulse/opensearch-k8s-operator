@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	ErrClusterAllocationExplainOperation     = errors.New("cluster allocation explain failed")
-	ErrClusterHealthOperation                = errors.New("cluster health failed")
-	ErrClusterSettingsOperation              = errors.New("cluster settings failed")
-	ErrCatIndicesOperation                   = errors.New("cat indices failed")
-	ErrVotingConfigExclusionsOperation       = errors.New("voting config exclusions failed")
+	ErrClusterAllocationExplainOperation = errors.New("cluster allocation explain failed")
+	ErrClusterHealthOperation            = errors.New("cluster health failed")
+	ErrClusterSettingsOperation          = errors.New("cluster settings failed")
+	ErrCatIndicesOperation               = errors.New("cat indices failed")
+	ErrVotingConfigExclusionsOperation   = errors.New("voting config exclusions failed")
 )
 
 func ErrClusterAllocationExplainGetFailed(resp string) error {
