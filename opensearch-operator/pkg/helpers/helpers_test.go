@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	opensearchv1 "github.com/opensearch-project/opensearch-k8s-operator/opensearch-operator/api/opensearch.org/v1"
 	"gopkg.in/yaml.v2"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -606,5 +607,53 @@ kibanaserver:
 		}
 		Expect(roleStrings).To(ContainElement("other_role"))
 		Expect(roleStrings).To(ContainElement("admin"))
+	})
+})
+var _ = Describe("Master role helpers", func() {
+	Describe("CountMasterEligibleReplicas", func() {
+		It("should sum master and cluster_manager replicas", func() {
+			pools := []opensearchv1.NodePool{
+				{Component: "masters", Replicas: 3, Roles: []string{"cluster_manager"}},
+				{Component: "data", Replicas: 5, Roles: []string{"data"}},
+				{Component: "mixed", Replicas: 2, Roles: []string{"master", "data"}},
+			}
+			Expect(CountMasterEligibleReplicas(pools)).To(Equal(int32(5)))
+		})
+
+		It("should return zero when no master-eligible pools exist", func() {
+			pools := []opensearchv1.NodePool{
+				{Component: "data", Replicas: 5, Roles: []string{"data"}},
+			}
+			Expect(CountMasterEligibleReplicas(pools)).To(Equal(int32(0)))
+		})
+	})
+
+	Describe("IsMasterStatefulSet", func() {
+		It("should detect master role label", func() {
+			sts := appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"opensearch.role": "master"},
+				},
+			}
+			Expect(IsMasterStatefulSet(sts)).To(BeTrue())
+		})
+
+		It("should detect cluster_manager role label", func() {
+			sts := appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"opensearch.role": "cluster_manager"},
+				},
+			}
+			Expect(IsMasterStatefulSet(sts)).To(BeTrue())
+		})
+
+		It("should return false for data pools", func() {
+			sts := appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"opensearch.role": "data"},
+				},
+			}
+			Expect(IsMasterStatefulSet(sts)).To(BeFalse())
+		})
 	})
 })
