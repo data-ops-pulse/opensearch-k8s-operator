@@ -247,7 +247,11 @@ func (r *ClusterReconciler) reconcileNodeStatefulSet(nodePool opensearchv1.NodeP
 	}
 
 	// Detect cluster failure and initiate parallel recovery
+	// Skip until the cluster has initialized ΓÇö a never-initialized CR does not need
+	// parallel recovery, and this also prevents misfires during API-group migration
+	// when Status.Initialized has not landed yet on the new CR.
 	if helpers.ParallelRecoveryMode() &&
+		r.instance.Status.Initialized &&
 		(nodePool.Persistence == nil || nodePool.Persistence.PVC != nil) {
 		// This logic only works if the STS uses PVCs
 		// First check if the STS already has a readable status (CurrentRevision == "" indicates the STS is newly created and the controller has not yet updated the status properly)
