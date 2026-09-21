@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   bundle-validate:
-    runs-on: ubuntu-latest
+    runs-on: eks-staging
     name: Validate OLM Bundle
     steps:
       - name: Checkout
@@ -33,6 +33,10 @@ jobs:
         with:
           go-version-file: 'go.work'
           cache: false
+
+      # The ARC runner image ships no make; ubuntu-latest does.
+      - name: Install make
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends make
 
       - name: Install operator-sdk
         run: |
